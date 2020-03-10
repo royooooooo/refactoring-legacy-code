@@ -20,7 +20,9 @@ public class WalletTransaction {
     private String walletTransactionId;
 
 
-    public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId, String orderId) {
+    public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
+        String orderId, Double amount) {
+        this.amount = amount;
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
             this.id = preAssignedId;
         } else {
