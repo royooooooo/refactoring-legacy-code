@@ -8,6 +8,9 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 
@@ -34,6 +37,7 @@ def JUNIT5_PLATFORM_VERSION = '1.3.0'
 
 dependencies {
     compile 'com.google.guava:guava:28.2-jre'
+    compile fileTree(include: ['*.jar'], dir: 'lib')
     testCompile "org.junit.jupiter:junit-jupiter-api:${JUNIT5_API_VERSION}"
     testCompile "org.junit.jupiter:junit-jupiter-engine:${JUNIT5_API_VERSION}"
     testCompile "org.junit.jupiter:junit-jupiter-params:${JUNIT5_API_VERSION}"
