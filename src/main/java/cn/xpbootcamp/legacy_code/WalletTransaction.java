@@ -5,10 +5,10 @@ import cn.xpbootcamp.legacy_code.service.WalletService;
 import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
 import cn.xpbootcamp.legacy_code.utils.IdGenerator;
 import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
-
 import javax.transaction.InvalidTransactionException;
 
 public class WalletTransaction {
+
     private String id;
     private Long buyerId;
     private Long sellerId;
@@ -22,8 +22,9 @@ public class WalletTransaction {
 
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
-        String orderId, Double amount,
+        String orderId, Long createdTimestamp, Double amount,
         RedisDistributedLock redisDistributedLock) {
+        this.createdTimestamp = createdTimestamp;
         this.amount = amount;
         this.redisDistributedLock = redisDistributedLock;
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
@@ -39,14 +40,15 @@ public class WalletTransaction {
         this.productId = productId;
         this.orderId = orderId;
         this.status = STATUS.TO_BE_EXECUTED;
-        this.createdTimestamp = System.currentTimeMillis();
     }
 
     public boolean execute() throws InvalidTransactionException {
         if (buyerId == null || (sellerId == null || amount < 0.0)) {
             throw new InvalidTransactionException("This is an invalid transaction");
         }
-        if (status == STATUS.EXECUTED) return true;
+        if (status == STATUS.EXECUTED) {
+            return true;
+        }
         boolean isLocked = false;
         try {
             isLocked = redisDistributedLock.lock(id);
@@ -55,7 +57,9 @@ public class WalletTransaction {
             if (!isLocked) {
                 return false;
             }
-            if (status == STATUS.EXECUTED) return true; // double check
+            if (status == STATUS.EXECUTED) {
+                return true; // double check
+            }
             long executionInvokedTimestamp = System.currentTimeMillis();
             // 交易超过20天
             if (executionInvokedTimestamp - createdTimestamp > 1728000000) {
