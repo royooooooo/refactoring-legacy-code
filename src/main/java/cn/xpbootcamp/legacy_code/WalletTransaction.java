@@ -21,7 +21,7 @@ public class WalletTransaction {
     private WalletService walletService;
 
     public static int TIMESTAMP_20_DAYS = 1728000000;
-
+    public String INVALID_TRANSACTION_EXCEPTION_MESSAGE = "This is an invalid transaction";
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
         String orderId, Long createdTimestamp, Double amount,
@@ -52,7 +52,7 @@ public class WalletTransaction {
 
     public boolean execute() throws InvalidTransactionException {
         if (isInvalidTransaction()) {
-            throw new InvalidTransactionException("This is an invalid transaction");
+            throw new InvalidTransactionException(INVALID_TRANSACTION_EXCEPTION_MESSAGE);
         }
         boolean isLocked = false;
         try {
