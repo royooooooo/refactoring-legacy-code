@@ -20,6 +20,8 @@ public class WalletTransaction {
     private RedisDistributedLock redisDistributedLock;
     private WalletService walletService;
 
+    public static int TIMESTAMP_20_DAYS = 1728000000;
+
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
         String orderId, Long createdTimestamp, Double amount,
@@ -65,8 +67,7 @@ public class WalletTransaction {
             if (status == STATUS.EXECUTED) {
                 return true;
             }
-            long executionInvokedTimestamp = System.currentTimeMillis();
-            if (executionInvokedTimestamp - createdTimestamp > 1728000000) {
+            if (executionIsOver20Days()) {
                 this.status = STATUS.EXPIRED;
                 return false;
             }
@@ -84,6 +85,10 @@ public class WalletTransaction {
                 redisDistributedLock.unlock(id);
             }
         }
+    }
+
+    private boolean executionIsOver20Days() {
+        return System.currentTimeMillis() - createdTimestamp > TIMESTAMP_20_DAYS;
     }
 
     private boolean isInvalidTransaction() {
