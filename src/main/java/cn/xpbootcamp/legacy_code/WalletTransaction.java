@@ -2,7 +2,6 @@ package cn.xpbootcamp.legacy_code;
 
 import cn.xpbootcamp.legacy_code.enums.STATUS;
 import cn.xpbootcamp.legacy_code.service.WalletService;
-import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
 import cn.xpbootcamp.legacy_code.utils.IdGenerator;
 import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 import javax.transaction.InvalidTransactionException;
@@ -19,14 +18,17 @@ public class WalletTransaction {
     private STATUS status;
     private String walletTransactionId;
     private RedisDistributedLock redisDistributedLock;
+    private WalletService walletService;
 
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
         String orderId, Long createdTimestamp, Double amount,
-        RedisDistributedLock redisDistributedLock) {
+        RedisDistributedLock redisDistributedLock,
+        WalletService walletService) {
         this.createdTimestamp = createdTimestamp;
         this.amount = amount;
         this.redisDistributedLock = redisDistributedLock;
+        this.walletService = walletService;
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
             this.id = preAssignedId;
         } else {
@@ -66,7 +68,6 @@ public class WalletTransaction {
                 this.status = STATUS.EXPIRED;
                 return false;
             }
-            WalletService walletService = new WalletServiceImpl();
             String walletTransactionId = walletService.moveMoney(id, buyerId, sellerId, amount);
             if (walletTransactionId != null) {
                 this.walletTransactionId = walletTransactionId;
