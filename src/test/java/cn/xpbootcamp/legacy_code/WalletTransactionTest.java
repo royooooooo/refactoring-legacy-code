@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cn.xpbootcamp.legacy_code.service.WalletService;
@@ -93,5 +95,13 @@ class WalletTransactionTest {
             2L, 3L, "orderId", createdTimestamp, 1.0, redisDistributedLock, walletService);
 
         assertTrue(walletTransaction.execute());
+    }
+
+    @Test
+    void alwaysUnlockTransactionWhenThrowRuntimeException() {
+        WalletTransaction walletTransaction = new WalletTransaction("preAssignedId", 1L,
+            2L, 3L, "orderId", createdTimestamp, 1.0, redisDistributedLock, walletService);
+        assertThrows(RuntimeException.class, walletTransaction::execute);
+        verify(redisDistributedLock, times(1)).unlock(anyString());
     }
 }
