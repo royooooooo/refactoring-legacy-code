@@ -29,14 +29,7 @@ public class WalletTransaction {
         this.amount = amount;
         this.redisDistributedLock = redisDistributedLock;
         this.walletService = walletService;
-        if (preAssignedId != null && !preAssignedId.isEmpty()) {
-            this.id = preAssignedId;
-        } else {
-            this.id = IdGenerator.generateTransactionId();
-        }
-        if (!this.id.startsWith("t_")) {
-            this.id = "t_" + preAssignedId;
-        }
+        this.id = getTransactionId(preAssignedId);
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
@@ -44,12 +37,23 @@ public class WalletTransaction {
         this.status = STATUS.TO_BE_EXECUTED;
     }
 
-    public boolean execute() throws InvalidTransactionException {
-        if (buyerId == null || (sellerId == null || amount < 0.0)) {
-            throw new InvalidTransactionException("This is an invalid transaction");
+    private String getTransactionId(String preAssignedId) {
+        String tempId;
+        if (preAssignedId != null && !preAssignedId.isEmpty()) {
+            tempId = preAssignedId;
+        } else {
+            tempId = IdGenerator.generateTransactionId();
         }
-        if (status == STATUS.EXECUTED) {
-            return true;
+        if (!tempId.startsWith("t_")) {
+            tempId = "t_" + preAssignedId;
+        }
+
+        return tempId;
+    }
+
+    public boolean execute() throws InvalidTransactionException {
+        if (isInvalidTransaction()) {
+            throw new InvalidTransactionException("This is an invalid transaction");
         }
         boolean isLocked = false;
         try {
@@ -80,6 +84,10 @@ public class WalletTransaction {
                 redisDistributedLock.unlock(id);
             }
         }
+    }
+
+    private boolean isInvalidTransaction() {
+        return buyerId == null || (sellerId == null || amount < 0.0);
     }
 
 }
