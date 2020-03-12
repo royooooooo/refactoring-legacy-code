@@ -55,15 +55,13 @@ public class WalletTransaction {
         try {
             isLocked = redisDistributedLock.lock(id);
 
-            // 锁定未成功，返回false
             if (!isLocked) {
                 return false;
             }
             if (status == STATUS.EXECUTED) {
-                return true; // double check
+                return true;
             }
             long executionInvokedTimestamp = System.currentTimeMillis();
-            // 交易超过20天
             if (executionInvokedTimestamp - createdTimestamp > 1728000000) {
                 this.status = STATUS.EXPIRED;
                 return false;
