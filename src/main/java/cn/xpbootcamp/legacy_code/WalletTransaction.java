@@ -31,7 +31,7 @@ public class WalletTransaction {
         this.amount = amount;
         this.redisDistributedLock = redisDistributedLock;
         this.walletService = walletService;
-        this.id = getTransactionId(preAssignedId);
+        generateTransactionId(preAssignedId);
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
@@ -39,18 +39,15 @@ public class WalletTransaction {
         this.status = STATUS.TO_BE_EXECUTED;
     }
 
-    private String getTransactionId(String preAssignedId) {
-        String tempId;
+    private void generateTransactionId(String preAssignedId) {
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
-            tempId = preAssignedId;
+            this.id = preAssignedId;
         } else {
-            tempId = IdGenerator.generateTransactionId();
+            this.id = IdGenerator.generateTransactionId();
         }
-        if (!tempId.startsWith("t_")) {
-            tempId = "t_" + preAssignedId;
+        if (!this.id.startsWith("t_")) {
+            this.id = "t_" + preAssignedId;
         }
-
-        return tempId;
     }
 
     public boolean execute() throws InvalidTransactionException {
