@@ -61,14 +61,10 @@ public class WalletTransaction {
         try {
             isLocked = redisDistributedLock.lock(id);
 
-            if (!isLocked) {
-                return false;
-            }
-            if (status == STATUS.EXECUTED) {
+            if (transactionIsExecuted()) {
                 return true;
             }
-            if (executionIsOver20Days()) {
-                this.status = STATUS.EXPIRED;
+            if (!isLocked || executionIsOver20Days()) {
                 return false;
             }
             String walletTransactionId = walletService.moveMoney(id, buyerId, sellerId, amount);
@@ -85,6 +81,10 @@ public class WalletTransaction {
                 redisDistributedLock.unlock(id);
             }
         }
+    }
+
+    private boolean transactionIsExecuted() {
+        return status == STATUS.EXECUTED;
     }
 
     private boolean executionIsOver20Days() {
