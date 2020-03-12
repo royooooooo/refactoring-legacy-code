@@ -18,11 +18,14 @@ public class WalletTransaction {
     private Double amount;
     private STATUS status;
     private String walletTransactionId;
+    private RedisDistributedLock redisDistributedLock;
 
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId,
-        String orderId, Double amount) {
+        String orderId, Double amount,
+        RedisDistributedLock redisDistributedLock) {
         this.amount = amount;
+        this.redisDistributedLock = redisDistributedLock;
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
             this.id = preAssignedId;
         } else {
@@ -46,7 +49,7 @@ public class WalletTransaction {
         if (status == STATUS.EXECUTED) return true;
         boolean isLocked = false;
         try {
-            isLocked = RedisDistributedLock.getSingletonInstance().lock(id);
+            isLocked = redisDistributedLock.lock(id);
 
             // 锁定未成功，返回false
             if (!isLocked) {
@@ -71,7 +74,7 @@ public class WalletTransaction {
             }
         } finally {
             if (isLocked) {
-                RedisDistributedLock.getSingletonInstance().unlock(id);
+                redisDistributedLock.unlock(id);
             }
         }
     }
